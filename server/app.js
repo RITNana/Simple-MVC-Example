@@ -10,7 +10,13 @@ const router = require('./router.js');
 
 const port = process.env.PORT || process.env.NODE_PORT || 3000;
 
-
+const dbURI = process.env.MONGODB_URI || 'mongodb+srv://ns8363:ujucxZ2TT0dpPGq9@cluster0.ndrjj.mongodb.net/simpleMVCExample';
+mongoose.connect(dbURI).catch((err) => {
+  if (err) {
+    console.log('Could not connect to database');
+    throw err;
+  }
+});
 const app = express();
 
 app.use('/assets', express.static(path.resolve(`${__dirname}/../client/`)));
@@ -35,4 +41,3 @@ app.listen(port, (err) => {
   }
   console.log(`Listening on port ${port}`);
 });
-

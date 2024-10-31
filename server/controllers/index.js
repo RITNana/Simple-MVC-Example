@@ -1,18 +1,26 @@
 // pull in our models. This will automatically load the index.js from that folder
 const models = require('../models');
 
+const { Cat } = models;
+
 const hostIndex = (req, res) => {
-  let name = 'unknown';
+  const name = 'unknown';
 
   res.render('index', {
     currentName: name,
     title: 'Home',
-    pageName: 'Home Page'
+    pageName: 'Home Page',
   });
 };
 
-const hostPage1 = (req, res) => {
-
+const hostPage1 = async (req, res) => {
+  try {
+    const docs = await Cat.find({}).lean().exec();
+    return res.render('page1', { cats: docs });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: 'failed to find cats' });
+  }
 };
 
 const hostPage2 = (req, res) => {
@@ -27,21 +35,40 @@ const getName = (req, res) => {
 
 };
 
-const setName = (req, res) => {
+const setName = async (req, res) => {
   if (!req.body.firstname || !req.body.lastname || !req.body.beds) {
     return res.status(400).json({ error: 'firstname, lastname and beds are all required' });
   }
-  
+
+  const catData = {
+    name: `${req.body.firstname} ${req.body.lastname}`,
+    bedsOwned: req.body.beds,
+  };
+
+  const newCat = new Cat(catData);
+  console.log(newCat);
+  try {
+    await newCat.save();
+    return res.status(201).json({
+      name: newCat.name,
+      beds: newCat.bedsOwned,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: 'failed to create cat' });
+  }
 };
 
+// eslint-disable-next-line consistent-return
 const searchName = (req, res) => {
   if (!req.query.name) {
     return res.status(400).json({ error: 'Name is required to perform a search' });
   }
 };
 
+// eslint-disable-next-line no-unused-vars
 const updateLast = (req, res) => {
-	
+
 };
 
 const notFound = (req, res) => {
