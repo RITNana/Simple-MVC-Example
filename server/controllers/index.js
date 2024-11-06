@@ -31,8 +31,19 @@ const hostPage3 = (req, res) => {
   res.render('page3');
 };
 
-const getName = (req, res) => {
-
+const getName = async (req, res) => {
+  try {
+    const doc = await Cat.findOne({}).sort({ createdDate: 'descending' }).lean().exec();
+    if (!doc) {
+      return res.status(404).json({ error: 'No cat found' });
+    }
+    return res.json({ name: doc.name });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json(
+      { error: 'Something went wrong contacting the database' },
+    );
+  }
 };
 
 const setName = async (req, res) => {
@@ -60,9 +71,19 @@ const setName = async (req, res) => {
 };
 
 // eslint-disable-next-line consistent-return
-const searchName = (req, res) => {
+const searchName = async (req, res) => {
   if (!req.query.name) {
     return res.status(400).json({ error: 'Name is required to perform a search' });
+  }
+  try {
+    const doc = await Cat.findOne({ name: req.query.name }).select('name bedsOwned').exec();
+    if (!doc) {
+      return res.status(404).json({ error: 'No cat found' });
+    }
+    return res.json({ name: doc.name, beds: doc.bedsOwned });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: 'Something went wrong' });
   }
 };
 
